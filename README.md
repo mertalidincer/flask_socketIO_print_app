@@ -8,7 +8,6 @@ cd flask_socketIO_print_app
 # Sanal Ortamı Oluşturun ve Bağlayın
 python -m venv .venv
 source .venv/bin/activate  # MacOS/Linux
-# veya
 .venv\Scripts\activate  # Windows
 
 # Bağımlılıkları Yükleyin
