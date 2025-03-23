@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} Flask-SocketIO - Print  {% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .logo{
+            text-align: center;
+        }
+        body { 
+            text-align: center; 
+            background-color: #ffffff;
+        }
+        canvas { 
+            border: 1px double black; cursor: crosshair; 
+            background-color: white;
+        }
+        button {
+            margin: 5px;
+            padding: 10px;
+        }
+        #dropdown-user {
+            margin-top: 220px;
+        }
+        .content{
+            height: 100vh;
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        {% block nav %}{% endblock %}
+    </nav>
+    <div class="sidebar">
+        {% block sidebar %}{% endblock %}
+    </div>
+    <section class="content">
+        {% block content %}{% endblock %}
+    </section>
+
+    <script>
+        
+        // user menu dropDown
+        document.addEventListener("DOMContentLoaded", function () {
+            const userMenuButton = document.getElementById("userMenuButton");
+            const dropdownMenu = document.getElementById("dropdown-user");
+
+            if (userMenuButton && dropdownMenu) {
+                userMenuButton.addEventListener("click", function () {
+                dropdownMenu.classList.toggle("hidden");
+            });
+
+                document.addEventListener("click", function (event) {
+                    if (!userMenuButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                        dropdownMenu.classList.add("hidden");
+                    }
+                });
+            } else {
+                console.error("DropDown undif..");
+            }
+        });
+
+        const canvas = document.getElementById("paintCanvas");
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height =  canvas.parentElement.clientHeight;
+        const ctx = canvas.getContext("2d");
+        
+        let painting = false;
+        let color = "black";
+        let brushSize = 5;
+        let isErasing = false; 
+        let history = [];
+        
+        document.getElementById("colorPicker").addEventListener("input", (e) => {
+            color = e.target.value;
+            isErasing = false;
+        });
+        
+        document.getElementById("brushSize").addEventListener("input", (e) => {
+            brushSize = e.target.value;
+        });
+
+        document.getElementById("undoBtn").addEventListener("click", () => {
+            if (history.length > 0){
+                let lastState = history.pop(); 
+                let img = new Image(); 
+                img.src = lastState;
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                };
+            }
+        });
+
+        const eraserBtn = document.getElementById("eraserBtn").addEventListener("click", () => {
+            const eraserLink = document.getElementById('eraserLink');
+            isErasing = true;
+            color = "white";
+            eraserBtn.classList.toggle('bg-gray-700');
+            eraserBtn.classList.toggle('text-white');
+            eraserBtn.classList.toggle('hover:bg-gray-600')
+
+            if (eraserLink.classList.contains('bg-gray-700')){
+                console.log('Eraser is now active');
+            } else {
+                console.log('Eraser is now inactive');
+            }
+        });
+        
+        canvas.addEventListener("mousedown", () => {
+            history.push(canvas.toDataURL()); 
+            painting = true; 
+        });
+         
+        canvas.addEventListener("mouseup", () => { 
+            painting = false; 
+            ctx.beginPath(); 
+        });
+        canvas.addEventListener("mousemove", draw);
+        
+        function draw(event) {
+            if (!painting) return;
+            
+            ctx.lineWidth = brushSize;
+            ctx.lineCap = "round";
+            ctx.strokeStyle = color;
+            
+            ctx.lineTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+        }
+    </script>
+</body>
+</html>
